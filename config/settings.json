@@ -1,0 +1,110 @@
+{
+  "masjid": {
+    "nama": "YAYASAN MASJID BAITURRAHMAN",
+    "subNama": "Masjid Merah Baiturrahman",
+    "alamat": "Jl. Tole Iskandar KM.03, Mekarjaya, Sukmajaya, Kota Depok"
+  },
+  "coordinates": {
+    "latitude": -6.4041337,
+    "longitude": 106.8414332,
+    "timezone": 7,
+    "cityId": "1301"
+  },
+  "displayConfig": {
+    "slideIntervalSec": 8,
+    "sholatDurationSec": 900
+  },
+  "iqomahMinutes": {
+    "fajr": 10,
+    "dhuhr": 10,
+    "asr": 10,
+    "maghrib": 7,
+    "isha": 10
+  },
+  "prayerOffsets": {
+    "imsak": 1,
+    "fajr": 1,
+    "sunrise": 0,
+    "dhuhr": 1,
+    "asr": 1,
+    "maghrib": 0,
+    "isha": 0
+  },
+  "runningText": [
+    " Selamat Datang di Masjid Merah Baiturrahman Kota Depok",
+    " Mari Makmurkan Masjid dengan Sholat Berjamaah Tepat Waktu",
+    " Salurkan Infaq Terbaik Anda via QRIS / Bank Transfer Resmi YMB",
+    " Mohon Nonaktifkan atau Heningkan Nada Dering Ponsel Saat Berada di Dalam Masjid"
+  ],
+  "slides": [
+    {
+      "type": "qris_image",
+      "title": "Infaq & Shodaqoh Realtime QRIS",
+      "subtitle": "Scan QRIS Resmi Yayasan Masjid Baiturrahman Depok",
+      "image": "assets/INFAQ SHODAQOH QRIS.png",
+      "bankName": "Bank Syariah Nasional (BSN)",
+      "accountNo": "7202200221",
+      "accountName": "Yayasan Masjid Baiturrahman",
+      "durationSec": 15
+    },
+    {
+      "type": "kas_masjid",
+      "title": "Laporan Keuangan Bulanan",
+      "subtitle": "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
+      "bulan": "Juli 2026",
+      "pemasukan": "Rp 60.445.550",
+      "pengeluaran": "Rp 58.670.000",
+      "saldoAkhir": "Rp 1.775.550",
+      "durationSec": 10
+    },
+    {
+      "type": "cuaca",
+      "title": "Prakiraan Cuaca BMKG",
+      "subtitle": "Masjid Merah Baiturrahman - Sukmajaya, Kota Depok",
+      "durationSec": 10
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/1.jpg",
+      "fit": "cover",
+      "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/tahsin-sabtu-pagi.png",
+      "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/kajian-pekan-ke-2.png",
+      "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/kajian-pekan-ke-3.png",
+      "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/kajian-pekan-ke-4.png",
+      "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/maulid.png",
+      "durationSec": 7
+    }
+  ]
+}

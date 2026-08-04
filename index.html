@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display TV Informasi & Jadwal Sholat - Yayasan Masjid Baiturrahman Depok</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- HEADER -->
+        <header>
+            <div class="logo-wrapper">
+                <img src="assets/LOGO YMB UPDATE 09-22.png" alt="Logo YMB" id="logo">
+            </div>
+
+            <div class="header-center">
+                <h1 id="namaMasjid">YAYASAN MASJID BAITURRAHMAN</h1>
+                <div class="header-sub">
+                    <span id="subNamaMasjid" class="badge-gold">Masjid Merah Baiturrahman</span>
+                    <span id="alamatMasjid">Jl. Tole Iskandar KM.03, Mekarjaya, Sukmajaya, Kota Depok</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div id="clock-box">
+                    <div id="clock">00:00:00</div>
+                    <div id="clock-timezone">WIB</div>
+                </div>
+                <div id="dates-box">
+                    <div id="tanggalMasehi">Senin, 1 Januari 2026</div>
+                    <div id="tanggalHijriyah">1 Muharram 1448 H</div>
+                </div>
+                <button id="btn-settings-trigger" title="Pengaturan (Tekan Esc atau S)">
+                    ⚙️ <span class="kbd-badge">Esc / S</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN DISPLAY CONTENT -->
+        <main id="main-content">
+            <!-- LEFT PANEL: MEDIA CAROUSEL -->
+            <section id="carousel-panel">
+                <div class="carousel-container" id="carouselContainer">
+                    <!-- Slides injected dynamically by JS -->
+                </div>
+                <div class="carousel-indicators" id="carouselIndicators">
+                    <!-- Indicators injected dynamically -->
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: NEXT PRAYER & REALTIME INFAQ QRIS TOAST -->
+            <section id="side-panel">
+                <!-- NEXT PRAYER CARD -->
+                <div class="side-card" id="next-prayer-card">
+                    <div class="card-header">
+                        <span class="pulse-dot"></span>
+                        <span class="card-title">MENUJUKAN ADZAN</span>
+                    </div>
+                    <div class="next-prayer-body">
+                        <div class="prayer-icon" id="nextPrayerIcon">🕌</div>
+                        <h2 id="nextPrayerName">MAGHRIB</h2>
+                        <div id="nextPrayerTime">18:02 WIB</div>
+                        <div class="countdown-badge" id="nextPrayerCountdown">
+                            <span class="countdown-label">Hitung Mundur</span>
+                            <div class="countdown-timer" id="countdownTimer">00:00:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REALTIME INFAQ QRIS TOAST CARD -->
+                <div class="side-card" id="qris-toast-card">
+                    <div class="card-header gold-header">
+                        <span class="qris-live-tag">LIVE QRIS</span>
+                        <span class="card-title">INFAQ REALTIME</span>
+                    </div>
+                    <div class="qris-toast-body" id="qrisToastBody">
+                        <div class="qris-scan-icon"></div>
+                        <div class="qris-toast-content">
+                            <div class="donor-name" id="qrisDonorName">Hamba Allah</div>
+                            <div class="donor-amount" id="qrisDonorAmount">Rp 50.000</div>
+                            <div class="donor-time" id="qrisDonorTime">Baru Saja via QRIS Merchants</div>
+                        </div>
+                    </div>
+                    <div class="qris-footer-hint">
+                        <span>Scan QRIS Resmi Masjid Merah YMB</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- PRAYER TIMES BAR -->
+        <section id="prayer-bar">
+            <div class="prayer-card" data-prayer="fajr">
+                <div class="prayer-name">SUBUH</div>
+                <div class="prayer-time" id="time-fajr">04:35</div>
+                <div class="prayer-status">MENUNGGU</div>
+            </div>
+            <div class="prayer-card" data-prayer="sunrise">
+                <div class="prayer-name">SYURUQ</div>
+                <div class="prayer-time" id="time-sunrise">05:52</div>
+                <div class="prayer-status">TERBIT</div>
+            </div>
+            <div class="prayer-card" data-prayer="dhuhr">
+                <div class="prayer-name">DZUHUR</div>
+                <div class="prayer-time" id="time-dhuhr">12:05</div>
+                <div class="prayer-status">MENUNGGU</div>
+            </div>
+            <div class="prayer-card" data-prayer="asr">
+                <div class="prayer-name">ASHAR</div>
+                <div class="prayer-time" id="time-asr">15:26</div>
+                <div class="prayer-status">MENUNGGU</div>
+            </div>
+            <div class="prayer-card" data-prayer="maghrib">
+                <div class="prayer-name">MAGHRIB</div>
+                <div class="prayer-time" id="time-maghrib">18:05</div>
+                <div class="prayer-status">MENUNGGU</div>
+            </div>
+            <div class="prayer-card" data-prayer="isha">
+                <div class="prayer-name">ISYA</div>
+                <div class="prayer-time" id="time-isha">19:18</div>
+                <div class="prayer-status">MENUNGGU</div>
+            </div>
+        </section>
+
+        <!-- FOOTER RUNNING TEXT MARQUEE -->
+        <footer>
+            <div class="marquee-wrapper">
+                <div id="runningText" class="marquee-content">
+                    <!-- Dynamic running text content -->
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- OVERLAY: IQOMAH COUNTDOWN -->
+    <div id="iqomah-overlay" class="overlay hidden">
+        <div class="iqomah-box">
+            <div class="iqomah-badge">PANGGILAN SHOLAT</div>
+            <h2 id="iqomahPrayerTitle">ADZAN MAGHRIB BERKUMANDANG</h2>
+            <div class="iqomah-subtitle">Menuju Iqomah Dalam</div>
+            <div class="iqomah-clock" id="iqomahCountdown">10:00</div>
+            <div class="iqomah-progress-bg">
+                <div class="iqomah-progress-fill" id="iqomahProgressBar"></div>
+            </div>
+            <div class="iqomah-admonition">
+                <span>⚠️ MOHON NONAKTIFKAN NADA DERING PONSEL ANDA</span>
+                <span>LURUSKAN DAN RAPATKAN SHAF SHOLAT</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY: SHOLAT MODE STANDBY -->
+    <div id="sholat-overlay" class="overlay hidden">
+        <div class="sholat-box">
+            <div class="crescent-icon">🌙</div>
+            <h2>SELAMAT MENUNAIKAN SHOLAT BERJAMAAH</h2>
+            <h3>MASJID MERAH BAITURRAHMAN DEPOK</h3>
+            <p>Luruskan dan Rapatkan Shaf | Heningkan Ponsel Anda</p>
+        </div>
+    </div>
+
+    <!-- OVERLAY: SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>⚙️ Pengaturan Display TV YMB</h2>
+                <button id="btn-close-settings" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="settings-form">
+                    <fieldset>
+                        <legend>Data Masjid & Koordinat</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inputNama">Nama Masjid:</label>
+                                <input type="text" id="inputNama" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSubNama">Sub-Judul / Alias:</label>
+                                <input type="text" id="inputSubNama" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputAlamat">Alamat Lengkap:</label>
+                            <input type="text" id="inputAlamat" class="form-control">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inputLat">Latitude:</label>
+                                <input type="number" step="0.001" id="inputLat" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputLng">Longitude:</label>
+                                <input type="number" step="0.001" id="inputLng" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputTZ">Timezone (GMT):</label>
+                                <input type="number" id="inputTZ" class="form-control">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Durasi Iqomah & Mode Sholat (Menit)</legend>
+                        <div class="form-row grid-5">
+                            <div class="form-group">
+                                <label for="iqFajr">Subuh:</label>
+                                <input type="number" id="iqFajr" min="1" max="30" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="iqDhuhr">Dzuhur:</label>
+                                <input type="number" id="iqDhuhr" min="1" max="30" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="iqAsr">Ashar:</label>
+                                <input type="number" id="iqAsr" min="1" max="30" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="iqMaghrib">Maghrib:</label>
+                                <input type="number" id="iqMaghrib" min="1" max="30" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="iqIsha">Isya:</label>
+                                <input type="number" id="iqIsha" min="1" max="30" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 10px;">
+                            <div class="form-group">
+                                <label for="inputSholatDurationMin">Durasi Layar Standby Mode Sholat Berjamaah (Menit):</label>
+                                <input type="number" id="inputSholatDurationMin" min="1" max="60" class="form-control">
+                            </div>
+                        </div>
+                    <fieldset>
+                        <legend>Laporan Keuangan Kas Masjid (Bulanan)</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inputKasBulan">Periode Bulan & Tahun:</label>
+                                <input type="text" id="inputKasBulan" class="form-control" placeholder="Contoh: Juli 2026">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputKasPemasukan">Total Pemasukan (Rp):</label>
+                                <input type="text" id="inputKasPemasukan" class="form-control" placeholder="Contoh: Rp 60.445.550">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputKasPengeluaran">Total Pengeluaran (Rp):</label>
+                                <input type="text" id="inputKasPengeluaran" class="form-control" placeholder="Contoh: Rp 58.670.000">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Running Text (Satu kalimat per baris)</legend>
+                        <div class="form-group">
+                            <textarea id="inputRunningText" rows="4" class="form-control"></textarea>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Mode Pengujian (Simulator)</legend>
+                        <div class="test-buttons-row">
+                            <button type="button" id="btn-test-chime" class="btn btn-info">🔊 Tes Audio Buzzer (Bip Bip Beeep)</button>
+                            <button type="button" id="btn-test-iqomah" class="btn btn-warning">⏱️ Simulasi Mode Iqomah (30s)</button>
+                            <button type="button" id="btn-test-sholat" class="btn btn-secondary">🕌 Simulasi Mode Sholat (15s)</button>
+                            <button type="button" id="btn-test-qris" class="btn btn-success">📲 Simulasi Infaq QRIS Live</button>
+                        </div>
+                    </fieldset>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btn-reset-settings" class="btn btn-danger">Reset Default</button>
+                        <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/prayer.js"></script>
+    <script src="js/praytimes.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

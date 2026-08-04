@@ -1,0 +1,7 @@
+# Antigravity & OS temp files
+.gemini/
+.system_generated/
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
