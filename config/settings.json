@@ -63,6 +63,13 @@
       "durationSec": 10
     },
     {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/web-masjid.png",
+      "durationSec": 10
+    },
+    {
       "type": "cuaca",
       "title": "Prakiraan Cuaca BMKG",
       "subtitle": "Masjid Merah Baiturrahman - Sukmajaya, Kota Depok",
@@ -109,13 +116,6 @@
       "title": "Masjid Merah Baiturrahman Depok",
       "subtitle": "Yayasan Masjid Baiturrahman",
       "image": "assets/maulid.png",
-      "durationSec": 7
-    },
-    {
-      "type": "image",
-      "title": "Masjid Merah Baiturrahman Depok",
-      "subtitle": "Yayasan Masjid Baiturrahman",
-      "image": "assets/web-masjid.png",
       "durationSec": 7
     }
   ]
