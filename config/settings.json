@@ -63,6 +63,16 @@
       "durationSec": 10
     },
     {
+      "type": "pemasukan_pekan",
+      "title": "Laporan Pemasukkan Setiap Pekan",
+      "subtitle": "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
+      "pekan": "Pekan-1",
+      "bulan": "Agustus",
+      "tahun": "2026",
+      "pemasukan": "Rp 15.250.000",
+      "durationSec": 10
+    },
+    {
       "type": "image",
       "title": "Masjid Merah Baiturrahman Depok",
       "subtitle": "Yayasan Masjid Baiturrahman",

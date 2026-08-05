@@ -30,60 +30,76 @@
 const SPREADSHEET_NAME = "Log Transactions BTN QRIS YMB";
 
 /**
- * 1. FUNGSI UTAMA: MENGECEK EMAIL BTN QRIS MASUK
- * Dipanggil otomatis oleh Timer Trigger setiap 1 menit.
+ * FUNGSI UJI MANAJEMEN: Pilih 'testRun' di dropdown atas editor GAS lalu klik 'Jalankan'
  */
-function checkBtnQrisEmails() {
-  const sheet = getOrCreateSheet();
-  
-  // Cari 15 email terbaru dari BTN Merchant QRIS
-  const query = 'from:recon.merchant@btn.co.id';
-  Logger.log("🔎 Mencari email dengan query: " + query);
-  
-  const threads = GmailApp.search(query, 0, 15);
-  Logger.log("📧 Ditemukan " + threads.length + " thread email BTN.");
-  
-  let newTxCount = 0;
-  
-  for (let i = 0; i < threads.length; i++) {
-    const messages = threads[i].getMessages();
-    for (let j = 0; j < messages.length; j++) {
-      const msg = messages[j];
-      // Gabungkan isi HTML dan Plain Text agar seluruh isi email (termasuk rincian tabel) pasti terbaca
-      const fullBody = (msg.getBody() || '') + "\n" + (msg.getPlainBody() || '');
-      
-      const parsedData = parseBtnEmailBody(fullBody);
-      
-      if (parsedData && parsedData.rrn) {
-        // Cek apakah RRN sudah ada di Sheet agar tidak terduplikasi
-        if (!isRrnExists(sheet, parsedData.rrn)) {
-          sheet.appendRow([
-            parsedData.rrn,
-            parsedData.tanggal,
-            parsedData.customer,
-            parsedData.total,
-            new Date().toISOString()
-          ]);
-          newTxCount++;
-          Logger.log("✅ Transaksi Baru Berhasil Disimpan: RRN " + parsedData.rrn + " - Total " + parsedData.total);
-        } else {
-          Logger.log("ℹ️ Transaksi RRN " + parsedData.rrn + " (" + parsedData.total + ") sudah ada di Sheet (dilewati).");
-        }
-      }
-    }
-  }
-  
-  Logger.log("🏁 Selesai. Total transaksi baru ditambahkan: " + newTxCount);
+function testRun() {
+  Logger.log("▶️ Memulai Tes Manual Listener QRIS...");
+  checkBtnQrisEmails();
+  Logger.log("⏹️ Tes Manual Selesai.");
 }
 
 /**
- * 2. PARSER PARSING EMAIL BODY (REGEXP BULLETPROOF V4)
+ * 1. FUNGSI UTAMA: MENGECEK EMAIL BTN QRIS MASUK (BANK & E-WALLET)
+ * Dipanggil otomatis oleh Timer Trigger setiap 1 menit.
  */
-function parseBtnEmailBody(bodyText) {
+function checkBtnQrisEmails() {
+  try {
+    Logger.log("🚀 Fungsi checkBtnQrisEmails DIMULAI");
+
+    const sheet = getOrCreateSheet();
+    Logger.log("📄 Sheet log transaksi siap.");
+    
+    // Query fleksibel: tangkap seluruh email BTN QRIS (Bank & E-Wallet: GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, dll)
+    const query = 'from:btn.co.id OR from:recon.merchant@btn.co.id OR subject:QRIS OR subject:Pembayaran';
+    Logger.log("🔎 Mencari email dengan query: " + query);
+    
+    const threads = GmailApp.search(query, 0, 20);
+    Logger.log("📧 Ditemukan " + threads.length + " thread email BTN.");
+    
+    let newTxCount = 0;
+    
+    for (let i = 0; i < threads.length; i++) {
+      const messages = threads[i].getMessages();
+      // Urutkan dari pesan paling baru ke paling lama dalam thread
+      for (let j = messages.length - 1; j >= 0; j--) {
+        const msg = messages[j];
+        const fullBody = (msg.getBody() || '') + "\n" + (msg.getPlainBody() || '');
+        const msgDate = msg.getDate();
+        const fallbackDateStr = Utilities.formatDate(msgDate, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+        
+        const parsedData = parseBtnEmailBody(fullBody, msg.getId(), fallbackDateStr);
+        
+        if (parsedData && parsedData.rrn && parsedData.total !== 'Rp 0') {
+          if (!isRrnExists(sheet, parsedData.rrn)) {
+            sheet.appendRow([
+              parsedData.rrn,
+              parsedData.tanggal,
+              parsedData.customer,
+              parsedData.total,
+              new Date().toISOString()
+            ]);
+            newTxCount++;
+            Logger.log("✅ Transaksi Baru (Bank/E-Wallet) Berhasil Disimpan: RRN " + parsedData.rrn + " - " + parsedData.total + " (" + parsedData.issuer + ")");
+          }
+        }
+      }
+    }
+    
+    Logger.log("🏁 Selesai. Total transaksi baru ditambahkan: " + newTxCount);
+  } catch (e) {
+    console.error("❌ ERROR di checkBtnQrisEmails: " + e.toString());
+    Logger.log("❌ ERROR di checkBtnQrisEmails: " + e.toString());
+  }
+}
+
+/**
+ * 2. PARSER PARSING EMAIL BODY (SUPPORT MULTI BANK & E-WALLET: GOPAY, OVO, DANA, SHOPEEPAY, SEABANK, BCA, DLL)
+ */
+function parseBtnEmailBody(bodyText, msgId, fallbackDateStr) {
   try {
     if (!bodyText) return null;
     
-    // Normalisasi: bersihkan tag HTML, bintang markdown (*), &nbsp;, enter, spasi berlebih
+    // Normalisasi teks email
     const cleanText = bodyText
       .replace(/<[^>]+>/g, ' ')
       .replace(/&nbsp;/gi, ' ')
@@ -91,38 +107,54 @@ function parseBtnEmailBody(bodyText) {
       .replace(/[\s\u00a0\u200b\r\n]+/g, ' ')
       .trim();
     
-    // 1. Match RRN (12 digit angka RRN transaksi BTN QRIS)
+    // 1. Match RRN / Nomor Referensi Transaksi (Mendukung Angka & Huruf Alphanumeric: e.g. 1r0sthi13918, 00F8000CRSLK, 1r1etj740090)
     let rrn = null;
-    const rrnMatch = cleanText.match(/Retrieval\s*Reference\s*Number[^\d]*(\d{10,16})/i) 
-                  || cleanText.match(/(?:Retrieval|Reference|RRN|Ref)[^\d]*(\d{10,16})/i) 
-                  || cleanText.match(/\b(\d{12})\b/);
+    const rrnMatch = cleanText.match(/Retrieval\s*Reference\s*Number[^\w]*([a-zA-Z0-9]{6,24})/i) 
+                  || cleanText.match(/(?:RRN|Ref|Referensi|Reference|ID\s*Transaksi|No\.\s*Ref)[^\w]*([a-zA-Z0-9]{6,24})/i)
+                  || cleanText.match(/Customer\s*PAN[^\d]*(\d{10,20})/i)
+                  || cleanText.match(/\b([a-zA-Z0-9]{12})\b/);
                   
     if (rrnMatch) {
       rrn = rrnMatch[1].trim();
+    } else {
+      // Fallback jika email e-wallet tidak menyantumkan label RRN standar, gunakan ID unik email
+      rrn = 'EML_' + (msgId || Date.now());
     }
     
-    if (!rrn) return null;
-    
-    // 2. Match Total / Nominal Rp (contoh: Rp 50.000 atau Rp. 50.000 atau Rp50.000)
+    // 2. Match Total / Nominal (Mendukung "Total Bayar", "Nominal Transaksi", "Total Transaksi", "Nominal", "Jumlah", "Amount", "Rp")
     let total = 'Rp 0';
-    const totalMatch = cleanText.match(/Total[^\d]*(Rp\.?\s*[\d\.,]+)/i) 
+    const totalMatch = cleanText.match(/(?:Total\s*Bayar|Nominal\s*Transaksi|Total\s*Transaksi|Nominal|Jumlah|Amount)[^\d]*(Rp\.?\s*[\d\.,]+)/i)
                     || cleanText.match(/(Rp\.?\s*[\d\.,]+)/i);
                     
     if (totalMatch) {
       total = totalMatch[1].trim();
-      if (!total.toLowerCase().startsWith('rp')) {
+      total = total.replace(/^rp\.?/i, 'Rp ').replace(/\s+/g, ' ');
+      if (!total.startsWith('Rp')) {
         total = 'Rp ' + total;
       }
     }
     
-    // 3. Match Tanggal/Jam (format: dd/mm/yyyy hh:mm:ss)
-    const dateMatch = cleanText.match(/(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}\s+[\d\:]+)/);
+    // 3. Match Tanggal/Jam (format: dd/mm/yyyy hh:mm:ss dari email BTN QRIS)
+    let tanggal = fallbackDateStr || '';
+    const dateMatch = cleanText.match(/Tanggal\/Jam[^\d]*(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}\s+\d{2}:\d{2}(?::\d{2})?)/i)
+                   || cleanText.match(/(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}\s+\d{2}:\d{2}(?::\d{2})?)/);
+    if (dateMatch) {
+      tanggal = dateMatch[1].trim();
+    }
     
+    // 4. Extract Issuer (Bank / E-Wallet)
+    let issuer = 'QRIS';
+    const issuerMatch = cleanText.match(/Nama\s*Issuer[^\w]*([A-Z0-9\s]+?)(?:Nama|Customer|Merchant|Status|Lokasi|Retrieval|Total|$)/i);
+    if (issuerMatch && issuerMatch[1].trim()) {
+      issuer = issuerMatch[1].trim();
+    }
+
     return {
       rrn: rrn,
       total: total,
       customer: 'Hamba Allah',
-      tanggal: dateMatch ? dateMatch[1].trim() : new Date().toLocaleString('id-ID')
+      issuer: issuer,
+      tanggal: tanggal
     };
   } catch (e) {
     Logger.log("Error parsing email: " + e.toString());
@@ -135,6 +167,9 @@ function parseBtnEmailBody(bodyText) {
  * Dipanggil oleh aplikasi TV Masjid (js/app.js) untuk mengambil transaksi QRIS terbaru.
  */
 function doGet(e) {
+  console.log("🌐 Web API Request (doGet) diterima dari TV Display.");
+  Logger.log("🌐 Web API Request (doGet) diterima dari TV Display.");
+  
   const sheet = getOrCreateSheet();
   const data = sheet.getDataRange().getValues();
   

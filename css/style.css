@@ -379,14 +379,16 @@ header {
 }
 
 .kas-month-badge {
-    align-self: flex-start;
+    align-self: center;
     background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
     color: #000;
     font-weight: 800;
-    font-size: 14px;
-    padding: 4px 16px;
-    border-radius: 20px;
-    letter-spacing: 1px;
+    font-size: 18px;
+    padding: 8px 28px;
+    border-radius: 30px;
+    letter-spacing: 1.5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    text-transform: uppercase;
 }
 
 .kas-cards-grid {
@@ -455,6 +457,41 @@ header {
 .kas-saldo .kas-card-value {
     color: var(--gold-light);
     text-shadow: 0 0 15px rgba(255, 229, 143, 0.6);
+}
+
+/* SINGLE INCOME CARD STYLING (PEMASUKAN PEKANAN) */
+.kas-cards-grid.single-card-grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.kas-card-single {
+    width: 100%;
+    max-width: 600px;
+    padding: 36px 45px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.55);
+    border: 2px solid var(--gold-primary);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(43, 189, 110, 0.15);
+}
+
+.kas-card-single .kas-card-header {
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.kas-card-single .kas-card-label {
+    font-size: 22px;
+    letter-spacing: 2px;
+}
+
+.kas-card-single .kas-card-value {
+    font-size: 52px;
+    font-weight: 900;
 }
 
 /* VISI MISI SLIDE */

@@ -743,6 +743,28 @@ function renderCarousel() {
                     </div>
                 </div>
             `;
+        } else if (slide.type === 'pemasukan_pekan') {
+            const periodeParts = [slide.pekan, slide.bulan, slide.tahun].filter(Boolean);
+            const periodeStr = periodeParts.length > 0 ? periodeParts.join(' ') : 'Pekan-1 Agustus 2026';
+            slideDiv.innerHTML = `
+                <div class="slide-custom">
+                    <div class="slide-custom-header">
+                        <h3>${slide.title || 'Laporan Pemasukkan Setiap Pekan'}</h3>
+                        <p>${slide.subtitle || 'Laporan Rekapitulasi Kas Masjid Merah Baiturrahman'}</p>
+                    </div>
+                    <div class="kas-slide-container">
+                        <div class="kas-month-badge">PERIODE LAPORAN: ${periodeStr}</div>
+                        <div class="kas-cards-grid single-card-grid">
+                            <div class="kas-card kas-pemasukan kas-card-single">
+                                <div class="kas-card-header">
+                                    <span class="kas-card-label">TOTAL PEMASUKAN</span>
+                                </div>
+                                <div class="kas-card-value">${slide.pemasukan || 'Rp 15.250.000'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         container.appendChild(slideDiv);
@@ -795,27 +817,94 @@ function startCarouselTimer() {
 }
 
 // ----------------------------------------------------
-// REALTIME INFAQ QRIS TOAST SIMULATION
+// REALTIME INFAQ QRIS ENGINE (10-ITEM ROTATION & EMAIL TIMESTAMP)
 // ----------------------------------------------------
-function simulateQrisInfaq(donorName = 'Hamba Allah', amount = 'Rp 50.000') {
+let qrisHistoryBuffer = [];
+let qrisRotationIndex = 0;
+let qrisRotationTimer = null;
+
+function formatQrisTimestamp(rawDateStr) {
+    if (!rawDateStr) return 'via QRIS';
+
+    const match = rawDateStr.match(/(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})\s+(\d{2}:\d{2})/);
+    if (match) {
+        const datePart = match[1].replace(/-/g, '/');
+        const timePart = match[2];
+
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        const todayStr = `${dd}/${mm}/${yyyy}`;
+
+        if (datePart === todayStr) {
+            return `Hari Ini (${timePart} WIB) via QRIS`;
+        } else {
+            return `${datePart} (${timePart} WIB) via QRIS`;
+        }
+    }
+
+    return `${rawDateStr} via QRIS`;
+}
+
+function displayQrisToastItem(item, isHighlight = false) {
+    if (!item) return;
+
     const donorNameEl = document.getElementById('qrisDonorName');
     const donorAmountEl = document.getElementById('qrisDonorAmount');
     const donorTimeEl = document.getElementById('qrisDonorTime');
     const toastBody = document.getElementById('qrisToastBody');
 
-    // Set donor name to Hamba Allah for privacy & anonymity
+    if (!donorNameEl || !donorAmountEl || !donorTimeEl || !toastBody) return;
+
     donorNameEl.innerText = 'Hamba Allah';
-    donorAmountEl.innerText = amount;
+    donorAmountEl.innerText = item.total || 'Rp 0';
+    donorTimeEl.innerText = formatQrisTimestamp(item.tanggal);
 
+    if (isHighlight) {
+        toastBody.classList.remove('toast-highlight');
+        void toastBody.offsetWidth; // trigger reflow
+        toastBody.classList.add('toast-highlight');
+    }
+}
+
+function startQrisRotationTimer() {
+    if (qrisRotationTimer) clearInterval(qrisRotationTimer);
+
+    // Rotate through 10 last QRIS infaq transactions every 8 seconds
+    qrisRotationTimer = setInterval(() => {
+        if (qrisHistoryBuffer.length === 0) return;
+
+        qrisRotationIndex = (qrisRotationIndex + 1) % qrisHistoryBuffer.length;
+        displayQrisToastItem(qrisHistoryBuffer[qrisRotationIndex], false);
+    }, 8000);
+}
+
+function simulateQrisInfaq(donorName = 'Hamba Allah', amount = 'Rp 50.000', customTimeStr = null) {
     const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    donorTimeEl.innerText = `Baru Saja (${timeStr} WIB) via QRIS`;
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
 
-    toastBody.classList.remove('toast-highlight');
-    void toastBody.offsetWidth; // trigger reflow
-    toastBody.classList.add('toast-highlight');
+    const timeStr = customTimeStr || `${dd}/${month}/${yyyy} ${hh}:${mm}:${ss}`;
 
-    // Note: Chime audio sound removed for QRIS notifications to keep mosque environment silent and peaceful.
+    const simItem = {
+        rrn: 'SIM_' + Date.now(),
+        total: amount,
+        customer: donorName,
+        tanggal: timeStr
+    };
+
+    // Prepend to qrisHistoryBuffer (max 10 items)
+    qrisHistoryBuffer.unshift(simItem);
+    if (qrisHistoryBuffer.length > 10) qrisHistoryBuffer.pop();
+
+    qrisRotationIndex = 0;
+    displayQrisToastItem(simItem, true);
+    startQrisRotationTimer();
 }
 
 // ----------------------------------------------------
@@ -846,6 +935,15 @@ function populateSettingsForm() {
     document.getElementById('inputKasBulan').value = kasSlide.bulan || 'Juli 2026';
     document.getElementById('inputKasPemasukan').value = kasSlide.pemasukan || 'Rp 60.445.550';
     document.getElementById('inputKasPengeluaran').value = kasSlide.pengeluaran || 'Rp 58.670.000';
+
+    const pekanSlide = (settings.slides || []).find(s => s.type === 'pemasukan_pekan') || {};
+    if (document.getElementById('inputPekan')) document.getElementById('inputPekan').value = pekanSlide.pekan || 'Pekan-1';
+    let bulanTahunCombined = pekanSlide.bulan || 'Agustus 2026';
+    if (pekanSlide.tahun && !bulanTahunCombined.includes(pekanSlide.tahun)) {
+        bulanTahunCombined = `${bulanTahunCombined} ${pekanSlide.tahun}`.trim();
+    }
+    if (document.getElementById('inputPekanBulan')) document.getElementById('inputPekanBulan').value = bulanTahunCombined;
+    if (document.getElementById('inputPekanPemasukan')) document.getElementById('inputPekanPemasukan').value = pekanSlide.pemasukan || 'Rp 15.250.000';
 
     document.getElementById('inputRunningText').value = (settings.runningText || []).join('\n');
 
@@ -919,6 +1017,31 @@ function setupModalEventListeners() {
             currentSlides[kasIndex] = newKasSlide;
         } else {
             currentSlides.splice(1, 0, newKasSlide);
+        }
+
+        // Pemasukan Pekanan Slide Update
+        const pekanVal = document.getElementById('inputPekan') ? document.getElementById('inputPekan').value || 'Pekan-1' : 'Pekan-1';
+        const pekanBulanVal = document.getElementById('inputPekanBulan') ? document.getElementById('inputPekanBulan').value || 'Agustus 2026' : 'Agustus 2026';
+        const pekanPemasukanVal = document.getElementById('inputPekanPemasukan') ? document.getElementById('inputPekanPemasukan').value || 'Rp 15.250.000' : 'Rp 15.250.000';
+
+        const newPekanSlide = {
+            type: "pemasukan_pekan",
+            title: "Laporan Pemasukkan Setiap Pekan",
+            subtitle: "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
+            pekan: pekanVal,
+            bulan: pekanBulanVal,
+            tahun: "",
+            pemasukan: pekanPemasukanVal,
+            durationSec: 10
+        };
+
+        const pekanIndex = currentSlides.findIndex(s => s.type === 'pemasukan_pekan');
+        if (pekanIndex >= 0) {
+            currentSlides[pekanIndex] = newPekanSlide;
+        } else {
+            const kasIdx = currentSlides.findIndex(s => s.type === 'kas_masjid');
+            const insertIdx = (kasIdx >= 0) ? kasIdx + 1 : 2;
+            currentSlides.splice(insertIdx, 0, newPekanSlide);
         }
 
         const updatedSettings = {
@@ -1029,20 +1152,38 @@ async function fetchLatestQrisTransaction(endpointUrl) {
         if (!response.ok) return;
 
         const data = await response.json();
-        if (!data || !data.latest || !data.latest.rrn) return;
+        if (!data) return;
 
-        const latest = data.latest;
+        let items = [];
+        if (Array.isArray(data.history) && data.history.length > 0) {
+            items = data.history;
+        } else if (data.latest && data.latest.rrn) {
+            items = [data.latest];
+        }
 
-        // Trigger toast only if this is a new transaction (RRN is different)
-        if (latest.rrn !== lastProcessedRrn) {
-            lastProcessedRrn = latest.rrn;
+        if (items.length === 0) return;
+
+        const formattedItems = items.map(it => ({
+            rrn: it.rrn || '',
+            total: it.total || 'Rp 0',
+            customer: it.customer || 'Hamba Allah',
+            tanggal: it.tanggal || new Date().toLocaleString('id-ID')
+        }));
+
+        qrisHistoryBuffer = formattedItems.slice(0, 10);
+
+        const latestRrn = data.latest ? data.latest.rrn : (items[0] ? items[0].rrn : '');
+        if (latestRrn && latestRrn !== lastProcessedRrn) {
+            lastProcessedRrn = latestRrn;
             localStorage.setItem('ymb_last_qris_rrn', lastProcessedRrn);
 
-            const donorName = 'Hamba Allah';
-            const amount = latest.total || 'Rp 5.000';
-
-            simulateQrisInfaq(donorName, amount);
-            console.log(`⚡ Live QRIS Notification Triggered: Hamba Allah - ${amount} (RRN: ${latest.rrn})`);
+            qrisRotationIndex = 0;
+            displayQrisToastItem(qrisHistoryBuffer[0], true);
+            startQrisRotationTimer();
+            console.log(`⚡ Live QRIS Notification Triggered: Hamba Allah - ${qrisHistoryBuffer[0].total} (${qrisHistoryBuffer[0].tanggal})`);
+        } else if (qrisHistoryBuffer.length > 0 && !qrisRotationTimer) {
+            displayQrisToastItem(qrisHistoryBuffer[0], false);
+            startQrisRotationTimer();
         }
     } catch (e) {
         console.warn('QRIS Endpoint Polling Error:', e);
