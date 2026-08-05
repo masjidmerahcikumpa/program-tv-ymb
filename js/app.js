@@ -105,9 +105,17 @@ async function initSettings() {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
+            const qrisEndpoint = (jsonSettings && jsonSettings.qrisConfig && jsonSettings.qrisConfig.endpointUrl)
+                ? jsonSettings.qrisConfig.endpointUrl
+                : (parsed.qrisConfig ? parsed.qrisConfig.endpointUrl : '');
+
             settings = {
                 ...jsonSettings,
                 ...parsed,
+                qrisConfig: {
+                    ...(parsed.qrisConfig || {}),
+                    endpointUrl: qrisEndpoint
+                },
                 // Always use latest prayerOffsets & slides from settings.json to prevent stale localStorage cache
                 prayerOffsets: jsonSettings ? jsonSettings.prayerOffsets : (parsed.prayerOffsets || {}),
                 slides: jsonSettings ? jsonSettings.slides : parsed.slides
