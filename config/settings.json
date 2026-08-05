@@ -14,6 +14,11 @@
     "slideIntervalSec": 8,
     "sholatDurationSec": 900
   },
+  "qrisConfig": {
+    "enabled": true,
+    "endpointUrl": "",
+    "pollIntervalSec": 5
+  },
   "iqomahMinutes": {
     "fajr": 10,
     "dhuhr": 10,

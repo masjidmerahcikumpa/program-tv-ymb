@@ -353,12 +353,24 @@ function determineNextPrayer() {
 // ----------------------------------------------------
 // REALTIME CLOCK & COUNTDOWN
 // ----------------------------------------------------
+let lastWeatherHour = -1;
+
 function updateClock() {
     const now = new Date();
 
     // Auto-recalculate prayer times on date change (e.g. at 00:00 midnight)
     if (lastCalculatedDateStr && lastCalculatedDateStr !== now.toDateString()) {
         calculatePrayerTimes();
+    }
+
+    // Auto-update BMKG Weather when hour changes (e.g. at 16:00, 17:00, 18:00, etc.)
+    const currentHour = now.getHours();
+    if (lastWeatherHour !== -1 && lastWeatherHour !== currentHour) {
+        lastWeatherHour = currentHour;
+        console.log(`⏰ Hour changed to ${currentHour}:00 - Updating BMKG Weather Timeline`);
+        fetchWeatherData();
+    } else if (lastWeatherHour === -1) {
+        lastWeatherHour = currentHour;
     }
 
     const hh = String(now.getHours()).padStart(2, '0');
@@ -553,6 +565,8 @@ function renderRunningText() {
 function renderCarousel() {
     if (!settings || !settings.slides) return;
 
+    const savedIndex = currentSlideIndex || 0;
+
     const container = document.getElementById('carouselContainer');
     const indicators = document.getElementById('carouselIndicators');
 
@@ -562,7 +576,7 @@ function renderCarousel() {
     settings.slides.forEach((slide, idx) => {
         // Build slide element
         const slideDiv = document.createElement('div');
-        slideDiv.className = `slide ${idx === 0 ? 'active' : ''}`;
+        slideDiv.className = `slide ${idx === savedIndex ? 'active' : ''}`;
 
         if (slide.type === 'cuaca') {
             const currentTemp = (weatherData && weatherData.current) ? Math.round(weatherData.current.temperature_2m) : 27;
@@ -727,12 +741,13 @@ function renderCarousel() {
 
         // Build indicator
         const dot = document.createElement('div');
-        dot.className = `indicator-dot ${idx === 0 ? 'active' : ''}`;
+        dot.className = `indicator-dot ${idx === savedIndex ? 'active' : ''}`;
         dot.addEventListener('click', () => showSlide(idx));
         indicators.appendChild(dot);
     });
 
-    currentSlideIndex = 0;
+    const targetIdx = Math.min(savedIndex, settings.slides.length - 1);
+    currentSlideIndex = targetIdx;
     startCarouselTimer();
 }
 
@@ -780,7 +795,8 @@ function simulateQrisInfaq(donorName = 'Hamba Allah', amount = 'Rp 50.000') {
     const donorTimeEl = document.getElementById('qrisDonorTime');
     const toastBody = document.getElementById('qrisToastBody');
 
-    donorNameEl.innerText = donorName;
+    // Set donor name to Hamba Allah for privacy & anonymity
+    donorNameEl.innerText = 'Hamba Allah';
     donorAmountEl.innerText = amount;
 
     const now = new Date();
@@ -791,7 +807,7 @@ function simulateQrisInfaq(donorName = 'Hamba Allah', amount = 'Rp 50.000') {
     void toastBody.offsetWidth; // trigger reflow
     toastBody.classList.add('toast-highlight');
 
-    playMosqueChime();
+    // Note: Chime audio sound removed for QRIS notifications to keep mosque environment silent and peaceful.
 }
 
 // ----------------------------------------------------
@@ -824,6 +840,12 @@ function populateSettingsForm() {
     document.getElementById('inputKasPengeluaran').value = kasSlide.pengeluaran || 'Rp 58.670.000';
 
     document.getElementById('inputRunningText').value = (settings.runningText || []).join('\n');
+
+    // QRIS Endpoint URL
+    const qrisEndpointEl = document.getElementById('inputQrisEndpoint');
+    if (qrisEndpointEl) {
+        qrisEndpointEl.value = (settings.qrisConfig && settings.qrisConfig.endpointUrl) || '';
+    }
 }
 
 function openSettingsModal() {
@@ -914,11 +936,17 @@ function setupModalEventListeners() {
                 maghrib: parseInt(document.getElementById('iqMaghrib').value, 10),
                 isha: parseInt(document.getElementById('iqIsha').value, 10)
             },
+            qrisConfig: {
+                enabled: true,
+                endpointUrl: (document.getElementById('inputQrisEndpoint') ? document.getElementById('inputQrisEndpoint').value.trim() : ''),
+                pollIntervalSec: 5
+            },
             slides: currentSlides,
             runningText: runningTextLines
         };
 
         saveSettings(updatedSettings);
+        initQrisRealtimeListener();
         closeSettingsModal();
         alert('Pengaturan berhasil disimpan!');
     });
@@ -964,15 +992,71 @@ function setupModalEventListeners() {
 }
 
 // ----------------------------------------------------
+// REALTIME INFAQ QRIS LIVE POLLING ENGINE (GOOGLE APPS SCRIPT)
+// ----------------------------------------------------
+let qrisPollTimer = null;
+let lastProcessedRrn = localStorage.getItem('ymb_last_qris_rrn') || '';
+
+function initQrisRealtimeListener() {
+    if (qrisPollTimer) clearInterval(qrisPollTimer);
+
+    if (!settings || !settings.qrisConfig || !settings.qrisConfig.enabled) return;
+    const endpoint = settings.qrisConfig.endpointUrl;
+    if (!endpoint || !endpoint.startsWith('http')) return;
+
+    const intervalSec = settings.qrisConfig.pollIntervalSec || 5;
+
+    // Fetch immediately on startup
+    fetchLatestQrisTransaction(endpoint);
+
+    // Set polling timer
+    qrisPollTimer = setInterval(() => {
+        fetchLatestQrisTransaction(endpoint);
+    }, intervalSec * 1000);
+}
+
+async function fetchLatestQrisTransaction(endpointUrl) {
+    try {
+        const response = await fetch(endpointUrl);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (!data || !data.latest || !data.latest.rrn) return;
+
+        const latest = data.latest;
+
+        // Trigger toast only if this is a new transaction (RRN is different)
+        if (latest.rrn !== lastProcessedRrn) {
+            lastProcessedRrn = latest.rrn;
+            localStorage.setItem('ymb_last_qris_rrn', lastProcessedRrn);
+
+            const donorName = 'Hamba Allah';
+            const amount = latest.total || 'Rp 5.000';
+
+            simulateQrisInfaq(donorName, amount);
+            console.log(`⚡ Live QRIS Notification Triggered: Hamba Allah - ${amount} (RRN: ${latest.rrn})`);
+        }
+    } catch (e) {
+        console.warn('QRIS Endpoint Polling Error:', e);
+    }
+}
+
+// ----------------------------------------------------
 // INITIALIZATION ON PAGE LOAD
 // ----------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
     await initSettings();
     setupModalEventListeners();
+    initQrisRealtimeListener();
 
     // Timers
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Auto-update BMKG Weather every 30 minutes
+    setInterval(() => {
+        fetchWeatherData();
+    }, 1800000);
 
     // Recalculate prayer times at midnight
     setInterval(() => {
