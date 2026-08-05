@@ -728,15 +728,17 @@ header {
 }
 
 .qris-scan-icon {
-    font-size: 36px;
-    background: rgba(212, 175, 55, 0.15);
-    border: 1px solid var(--gold-primary);
-    width: 60px;
-    height: 60px;
+    font-size: 30px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(80, 5, 5, 0.5));
+    border: 2px solid var(--gold-primary);
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+    flex-shrink: 0;
 }
 
 .qris-toast-content {
