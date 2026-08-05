@@ -16,7 +16,7 @@
   },
   "qrisConfig": {
     "enabled": true,
-    "endpointUrl": "",
+    "endpointUrl": "https://script.google.com/macros/s/AKfycbwTCi6qhk5EtSqSuwLoxT2mdqcM4RLCMkZJcwSN3lhwQGMiy_ITphfV8ZK4LuExP8pJ/exec",
     "pollIntervalSec": 5
   },
   "iqomahMinutes": {

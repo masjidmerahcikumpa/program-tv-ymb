@@ -36,52 +36,91 @@ const SPREADSHEET_NAME = "Log Transactions BTN QRIS YMB";
 function checkBtnQrisEmails() {
   const sheet = getOrCreateSheet();
   
-  // Cari email belum dibaca dari BTN Merchant QRIS
-  const query = 'from:recon.merchant@btn.co.id subject:"[Merchant BTN QRIS] Payment Merchant Success" is:unread';
-  const threads = GmailApp.search(query);
+  // Cari 15 email terbaru dari BTN Merchant QRIS
+  const query = 'from:recon.merchant@btn.co.id';
+  Logger.log("🔎 Mencari email dengan query: " + query);
+  
+  const threads = GmailApp.search(query, 0, 15);
+  Logger.log("📧 Ditemukan " + threads.length + " thread email BTN.");
+  
+  let newTxCount = 0;
   
   for (let i = 0; i < threads.length; i++) {
     const messages = threads[i].getMessages();
     for (let j = 0; j < messages.length; j++) {
       const msg = messages[j];
-      if (msg.isUnread()) {
-        const body = msg.getPlainBody();
-        const parsedData = parseBtnEmailBody(body);
-        
-        if (parsedData && parsedData.rrn) {
-          // Cek apakah RRN sudah ada di Sheet agar tidak terduplikasi
-          if (!isRrnExists(sheet, parsedData.rrn)) {
-            sheet.appendRow([
-              parsedData.rrn,
-              parsedData.tanggal,
-              parsedData.customer,
-              parsedData.total,
-              new Date().toISOString()
-            ]);
-            Logger.log("✅ Transaksi Baru Disimpan: " + parsedData.customer + " - " + parsedData.total + " (RRN: " + parsedData.rrn + ")");
-          }
+      // Gabungkan isi HTML dan Plain Text agar seluruh isi email (termasuk rincian tabel) pasti terbaca
+      const fullBody = (msg.getBody() || '') + "\n" + (msg.getPlainBody() || '');
+      
+      const parsedData = parseBtnEmailBody(fullBody);
+      
+      if (parsedData && parsedData.rrn) {
+        // Cek apakah RRN sudah ada di Sheet agar tidak terduplikasi
+        if (!isRrnExists(sheet, parsedData.rrn)) {
+          sheet.appendRow([
+            parsedData.rrn,
+            parsedData.tanggal,
+            parsedData.customer,
+            parsedData.total,
+            new Date().toISOString()
+          ]);
+          newTxCount++;
+          Logger.log("✅ Transaksi Baru Berhasil Disimpan: RRN " + parsedData.rrn + " - Total " + parsedData.total);
+        } else {
+          Logger.log("ℹ️ Transaksi RRN " + parsedData.rrn + " (" + parsedData.total + ") sudah ada di Sheet (dilewati).");
         }
-        
-        // Tandai email sebagai sudah dibaca
-        msg.markRead();
       }
     }
   }
+  
+  Logger.log("🏁 Selesai. Total transaksi baru ditambahkan: " + newTxCount);
 }
 
 /**
- * 2. PARSER PARSING EMAIL BODY (REGEXP)
+ * 2. PARSER PARSING EMAIL BODY (REGEXP BULLETPROOF V4)
  */
 function parseBtnEmailBody(bodyText) {
   try {
-    const rrnMatch = bodyText.match(/Retrieval Reference Number\s*:\s*(.+)/i);
-    const totalMatch = bodyText.match(/Total\s*:\s*(.+)/i);
-    const customerMatch = bodyText.match(/Nama Customer\s*:\s*(.+)/i);
-    const dateMatch = bodyText.match(/Tanggal\/Jam\s*:\s*(.+)/i);
+    if (!bodyText) return null;
+    
+    // Normalisasi: bersihkan tag HTML, bintang markdown (*), &nbsp;, enter, spasi berlebih
+    const cleanText = bodyText
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/[*#_~]/g, ' ')
+      .replace(/[\s\u00a0\u200b\r\n]+/g, ' ')
+      .trim();
+    
+    // 1. Match RRN (12 digit angka RRN transaksi BTN QRIS)
+    let rrn = null;
+    const rrnMatch = cleanText.match(/Retrieval\s*Reference\s*Number[^\d]*(\d{10,16})/i) 
+                  || cleanText.match(/(?:Retrieval|Reference|RRN|Ref)[^\d]*(\d{10,16})/i) 
+                  || cleanText.match(/\b(\d{12})\b/);
+                  
+    if (rrnMatch) {
+      rrn = rrnMatch[1].trim();
+    }
+    
+    if (!rrn) return null;
+    
+    // 2. Match Total / Nominal Rp (contoh: Rp 50.000 atau Rp. 50.000 atau Rp50.000)
+    let total = 'Rp 0';
+    const totalMatch = cleanText.match(/Total[^\d]*(Rp\.?\s*[\d\.,]+)/i) 
+                    || cleanText.match(/(Rp\.?\s*[\d\.,]+)/i);
+                    
+    if (totalMatch) {
+      total = totalMatch[1].trim();
+      if (!total.toLowerCase().startsWith('rp')) {
+        total = 'Rp ' + total;
+      }
+    }
+    
+    // 3. Match Tanggal/Jam (format: dd/mm/yyyy hh:mm:ss)
+    const dateMatch = cleanText.match(/(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}\s+[\d\:]+)/);
     
     return {
-      rrn: rrnMatch ? rrnMatch[1].trim() : null,
-      total: totalMatch ? totalMatch[1].trim() : 'Rp 0',
+      rrn: rrn,
+      total: total,
       customer: 'Hamba Allah',
       tanggal: dateMatch ? dateMatch[1].trim() : new Date().toLocaleString('id-ID')
     };
