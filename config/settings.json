@@ -27,11 +27,11 @@
     "isha": 10
   },
   "prayerOffsets": {
-    "imsak": 1,
-    "fajr": 1,
+    "imsak": 0,
+    "fajr": 0,
     "sunrise": 0,
-    "dhuhr": 1,
-    "asr": 1,
+    "dhuhr": 0,
+    "asr": 0,
     "maghrib": 0,
     "isha": 0
   },
