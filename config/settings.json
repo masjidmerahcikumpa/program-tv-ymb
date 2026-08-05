@@ -110,6 +110,13 @@
       "subtitle": "Yayasan Masjid Baiturrahman",
       "image": "assets/maulid.png",
       "durationSec": 7
+    },
+    {
+      "type": "image",
+      "title": "Masjid Merah Baiturrahman Depok",
+      "subtitle": "Yayasan Masjid Baiturrahman",
+      "image": "assets/web-masjid.png",
+      "durationSec": 7
     }
   ]
 }
