@@ -363,6 +363,76 @@ function determineNextPrayer() {
 // ----------------------------------------------------
 let lastWeatherHour = -1;
 
+// Helper function for Hijri date calculation with Smart TV fallback support
+function getHijriDate(date) {
+    const months = [
+        "Muharram", "Safar", "Rabi'ul Awal", "Rabi'ul Akhir",
+        "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban",
+        "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"
+    ];
+
+    // 1. Try Intl with umalqura calendar first (works on modern browsers)
+    try {
+        if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+            const formatter = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            let str = formatter.format(date);
+            const gregorianMonths = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const isGregorianFallback = gregorianMonths.some(m => str.includes(m));
+            if (!isGregorianFallback && !str.includes('SM')) {
+                return str.replace(/\s*H\s*$/i, '').trim();
+            }
+        }
+    } catch (e) {
+        // Fallback to mathematical calculation
+    }
+
+    // 2. Mathematical Fallback for Smart TV browsers without Islamic Intl support
+    let d = new Date(date);
+    d.setDate(d.getDate() + 2); // Adjustment for UmAlQura alignment
+
+    let day = d.getDate();
+    let month = d.getMonth() + 1;
+    let year = d.getFullYear();
+
+    if (month < 3) {
+        year -= 1;
+        month += 12;
+    }
+
+    let a = Math.floor(year / 100);
+    let b = 2 - a + Math.floor(a / 4);
+    let jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524.5;
+
+    let epochJulianDay = 1948439.5;
+    let cycle = Math.floor((jd - epochJulianDay) / 10631);
+    let remainingDays = (jd - epochJulianDay) - (cycle * 10631);
+
+    let hijriYear = Math.floor(remainingDays / 354.366);
+    let dayOfYear = remainingDays - Math.floor(hijriYear * 354.366);
+
+    let hijriMonth = 0;
+    const monthLength = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+    let sumDays = 0;
+
+    for (let i = 0; i < 12; i++) {
+        if (dayOfYear <= sumDays + monthLength[i]) {
+            hijriMonth = i;
+            break;
+        }
+        sumDays += monthLength[i];
+    }
+
+    let hijriDay = Math.floor(dayOfYear - sumDays);
+    if (hijriDay <= 0) hijriDay = 1;
+    let finalYear = Math.floor(cycle * 30 + hijriYear + 1);
+
+    return `${hijriDay} ${months[hijriMonth]} ${finalYear}`;
+}
+
 function updateClock() {
     const now = new Date();
 
@@ -396,12 +466,7 @@ function updateClock() {
     });
     document.getElementById('tanggalMasehi').innerText = masehi;
 
-    let hijriyah = new Intl.DateTimeFormat('id-ID-u-ca-islamic', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).format(now);
-    hijriyah = hijriyah.replace(/\s*H\s*$/i, '').trim();
+    let hijriyah = getHijriDate(now);
     document.getElementById('tanggalHijriyah').innerText = `${hijriyah} H`;
 
     // Countdown to Next Prayer Adhan
