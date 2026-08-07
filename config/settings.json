@@ -5,8 +5,8 @@
     "alamat": "Jl. Tole Iskandar KM.03, Mekarjaya, Sukmajaya, Kota Depok"
   },
   "coordinates": {
-    "latitude": -6.4041337,
-    "longitude": 106.8414332,
+    "latitude": -6.404,
+    "longitude": 106.841,
     "timezone": 7,
     "cityId": "1301"
   },
@@ -20,10 +20,10 @@
     "pollIntervalSec": 5
   },
   "iqomahMinutes": {
-    "fajr": 10,
-    "dhuhr": 10,
+    "fajr": 12,
+    "dhuhr": 12,
     "asr": 10,
-    "maghrib": 7,
+    "maghrib": 10,
     "isha": 10
   },
   "prayerOffsets": {
@@ -37,9 +37,7 @@
   },
   "runningText": [
     " Selamat Datang di Masjid Merah Baiturrahman Kota Depok",
-    " Mari Makmurkan Masjid dengan Sholat Berjamaah Tepat Waktu",
-    " Salurkan Infaq Terbaik Anda via QRIS / Bank Transfer Resmi YMB",
-    " Mohon Nonaktifkan atau Heningkan Nada Dering Ponsel Saat Berada di Dalam Masjid"
+    " Salurkan Infaq Terbaik Anda via QRIS / Bank Transfer Resmi YMB"
   ],
   "slides": [
     {
@@ -66,10 +64,10 @@
       "type": "pemasukan_pekan",
       "title": "Laporan Pemasukkan Setiap Pekan",
       "subtitle": "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
-      "pekan": "Pekan-1",
-      "bulan": "Agustus",
+      "pekan": "Pekan ke-5",
+      "bulan": "Juli",
       "tahun": "2026",
-      "pemasukan": "Rp 15.250.000",
+      "pemasukan": "Rp 10.705.000",
       "durationSec": 10
     },
     {
