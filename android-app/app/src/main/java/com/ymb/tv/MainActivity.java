@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             connectivityManager.registerDefaultNetworkCallback(networkCallback);
         } else {
             NetworkRequest request = new NetworkRequest.Builder().build();
-            connectivityManager.registerNetworkRequest(request, networkCallback);
+            connectivityManager.registerNetworkCallback(request, networkCallback);
         }
     }
 
