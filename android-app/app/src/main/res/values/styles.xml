@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. Fullscreen, No Action Bar for Android TV -->
+    <style name="Theme.ProgramTVYMB" parent="Theme.AppCompat.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/maroon_primary</item>
+        <item name="colorPrimaryDark">@color/maroon_dark</item>
+        <item name="colorAccent">@color/gold_accent</item>
+
+        <!-- Fullscreen settings -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@color/maroon_dark</item>
+    </style>
+
+</resources>

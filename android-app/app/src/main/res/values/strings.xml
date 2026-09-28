@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Program TV YMB</string>
+    <string name="web_url">https://masjidmerahcikumpa.github.io/program-tv-ymb/</string>
+    <string name="exit_confirm_title">Keluar Aplikasi</string>
+    <string name="exit_confirm_msg">Apakah Anda yakin ingin menutup Program TV YMB?</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+</resources>

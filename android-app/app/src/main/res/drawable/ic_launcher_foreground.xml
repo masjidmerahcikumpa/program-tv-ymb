@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Gold TV & Mosque Dome Motif -->
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M30,35 h48 v30 h-48 z M34,39 v22 h40 v-22 z M40,68 l-6,10 h36 l-6,-10 z"/>
+</vector>

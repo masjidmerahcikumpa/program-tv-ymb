@@ -1,0 +1,11 @@
+# Gradle build output & caches
+.gradle/
+build/
+app/build/
+.idea/
+*.apk
+*.aar
+local.properties
+captures/
+.externalNativeBuild
+.cxx/

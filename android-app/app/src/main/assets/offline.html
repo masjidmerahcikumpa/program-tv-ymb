@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Program TV YMB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #320000;
+            color: #FFFFFF;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .card {
+            background: #5B0000;
+            border: 3px solid #D4AF37;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            color: #D4AF37;
+        }
+        h1 {
+            font-size: 32px;
+            color: #D4AF37;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 20px;
+            color: #E0E0E0;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .timer {
+            font-weight: bold;
+            color: #D4AF37;
+        }
+        .btn {
+            background: #D4AF37;
+            color: #320000;
+            border: none;
+            padding: 15px 35px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .btn:focus, .btn:hover {
+            background: #FFFFFF;
+            color: #5B0000;
+            transform: scale(1.08);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">📡</div>
+        <h1>Koneksi Internet Terputus</h1>
+        <p>Aplikasi tidak dapat terhubung ke server Program TV YMB.<br>
+        Mencoba ulang otomatis dalam <span id="countdown" class="timer">10</span> detik.</p>
+        <button id="retryBtn" class="btn" onclick="retryConnection()" autofocus>Coba Lagi Sekarang</button>
+    </div>
+
+    <script>
+        const targetUrl = 'https://masjidmerahcikumpa.github.io/program-tv-ymb/';
+        let seconds = 10;
+        const countdownEl = document.getElementById('countdown');
+
+        function retryConnection() {
+            window.location.href = targetUrl;
+        }
+
+        setInterval(() => {
+            seconds--;
+            if (seconds <= 0) {
+                seconds = 10;
+                retryConnection();
+            }
+            countdownEl.innerText = seconds;
+        }, 1000);
+
+        window.addEventListener('online', () => {
+            retryConnection();
+        });
+    </script>
+</body>
+</html>
