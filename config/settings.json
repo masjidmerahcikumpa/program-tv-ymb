@@ -54,20 +54,20 @@
       "type": "kas_masjid",
       "title": "Laporan Keuangan Bulanan",
       "subtitle": "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
-      "bulan": "Agustus 2026",
-      "pemasukan": "Rp 54.315.550",
-      "pengeluaran": "Rp 53.805.000",
-      "saldoAkhir": "Rp 510.550",
+      "bulan": "September 2026",
+      "pemasukan": "Rp 52.070.550",
+      "pengeluaran": "Rp 51.583.000",
+      "saldoAkhir": "Rp 487.550",
       "durationSec": 10
     },
     {
       "type": "pemasukan_pekan",
       "title": "Laporan Pemasukkan Setiap Pekan",
       "subtitle": "Laporan Rekapitulasi Kas Masjid Merah Baiturrahman",
-      "pekan": "Pekan ke-4",
-      "bulan": "September",
+      "pekan": "Pekan ke-2",
+      "bulan": "Oktober",
       "tahun": "2026",
-      "pemasukan": "Rp 9.125.000",
+      "pemasukan": "Rp 5.945.000",
       "durationSec": 10
     },
     {
